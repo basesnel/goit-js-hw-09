@@ -41,7 +41,7 @@ refs.picker.classList.add('timepicker');
 refs.start.classList.add('startbtn');
 
 refs.start.addEventListener('click', () => {
-  pickedTime = flatPicker.selectedDates[0].getTime();
+  const pickedTime = flatPicker.selectedDates[0].getTime();
   refs.start.disabled = true;
 
   intervalId = setInterval(() => {
