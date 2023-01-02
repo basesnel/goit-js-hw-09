@@ -44,7 +44,7 @@ refs.start.addEventListener('click', () => {
   const pickedTime = flatPicker.selectedDates[0].getTime();
   refs.start.disabled = true;
 
-  intervalId = setInterval(() => {
+  const intervalId = setInterval(() => {
     const currentTime = Date.now();
     const intervalTime = pickedTime - currentTime;
     if (intervalTime < 0) {
