@@ -1,3 +1,32 @@
+import flatpickr from 'flatpickr';
+// import Notiflix from 'notiflix';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+
+// added import flatpicker styles.
+import 'flatpickr/dist/flatpickr.min.css';
+
+const options = {
+  enableTime: true,
+  time_24hr: true,
+  defaultDate: new Date(),
+  minuteIncrement: 1,
+  onClose(selectedDates) {
+    console.log(selectedDates[0]);
+    const pickedDate = new Date(selectedDates[0]);
+    const nowDate = new Date(this.now);
+
+    if (!(nowDate.getTime() < pickedDate.getTime())) {
+      refs.start.disabled = true;
+      Notify.failure('Please choose a date in the future');
+      return;
+    }
+
+    refs.start.disabled = false;
+  },
+};
+
+const flatPicker = flatpickr('#datetime-picker', options);
+
 // Interface elements.
 const refs = {
   picker: document.querySelector('#datetime-picker'),
@@ -8,113 +37,56 @@ const refs = {
   secs: document.querySelector('[data-seconds]'),
 };
 
-// PickerDate times.
-let pickerTime = null;
-let timeoutId = null;
-
-// Alert constants.
-const alert = document.createElement('p');
-const ALERT_DELAY = 3000;
-
-// Timer object.
-const timer = {
-  intervalId: null,
-  isActive: false,
-
-  start() {
-    if (this.isActive) return;
-    this.isActive = true;
-
-    this.intervalId = setInterval(() => {
-      const currentTime = Date.now();
-      const deltaTime = pickerTime - currentTime;
-      updateTimerInterface(getTimeComponents(deltaTime));
-    }, 1000);
-  },
-
-  stop() {
-    updateTimerInterface(getTimeComponents(0));
-    clearInterval(this.intervalId);
-    this.isActive = false;
-  },
-};
-
-// Alert create, stylization and event-generation.
-document.body.append(alert);
-alert.textContent = 'Please choose a date in the future';
-alert.classList.add('alert', 'js-hidden');
-alert.addEventListener('click', onHideAlert);
-
-// Input stylization.
-refs.picker.type = 'datetime-local';
 refs.picker.classList.add('timepicker');
-refs.picker.addEventListener('change', checkDate);
+refs.start.classList.add('startbtn');
+
+refs.start.addEventListener('click', () => {
+  pickedTime = flatPicker.selectedDates[0].getTime();
+  refs.start.disabled = true;
+
+  intervalId = setInterval(() => {
+    const currentTime = Date.now();
+    const intervalTime = pickedTime - currentTime;
+    if (intervalTime < 0) {
+      clearInterval(intervalId);
+      return;
+    }
+    refs.days.textContent = convertMs(intervalTime).days;
+    refs.hours.textContent = convertMs(intervalTime).hours;
+    refs.mins.textContent = convertMs(intervalTime).minutes;
+    refs.secs.textContent = convertMs(intervalTime).seconds;
+  }, 1000);
+});
 
 // Button stylization.
 refs.start.disabled = true;
-refs.start.classList.add('startbtn');
-refs.start.addEventListener('click', timer.start.bind(timer));
 
-// Alert hide onclick-event.
-function hideAlert() {
-  alert.classList.add('js-hidden');
-}
+// console.log(convertMs(2000)); // {days: 0, hours: 0, minutes: 0, seconds: 2}
+// console.log(convertMs(140000)); // {days: 0, hours: 0, minutes: 2, seconds: 20}
+// console.log(convertMs(24140000)); // {days: 0, hours: 6 minutes: 42, seconds: 20}
 
-// Alert setTimeout hide.
-function onHideAlert() {
-  hideAlert();
-  if (timeoutId) clearTimeout(timeoutId);
-}
+// Convert time to dd:hh:mm:ss.
+function convertMs(ms) {
+  // Number of milliseconds per unit of time
+  const second = 1000;
+  const minute = second * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
 
-// Check datepicker for future.
-function checkDate() {
-  timer.stop();
-  const nowTime = Date.now();
-  pickerTime = new Date(this.value).getTime();
-
-  if (nowTime < pickerTime) {
-    refs.start.disabled = false;
-    onHideAlert();
-    return;
-  }
-
-  refs.start.disabled = true;
-  alert.classList.remove('js-hidden');
-  timeoutId = setTimeout(() => {
-    hideAlert();
-  }, ALERT_DELAY);
-}
-
-// Get time components functions.
-function getTimeComponents(time) {
-  const days = pad(Math.floor(time / (1000 * 60 * 60 * 24)));
-  const hours = pad(
-    Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  // Remaining days
+  const days = addLeadingZero(Math.floor(ms / day));
+  // Remaining hours
+  const hours = addLeadingZero(Math.floor((ms % day) / hour));
+  // Remaining minutes
+  const minutes = addLeadingZero(Math.floor(((ms % day) % hour) / minute));
+  // Remaining seconds
+  const seconds = addLeadingZero(
+    Math.floor((((ms % day) % hour) % minute) / second)
   );
-  const mins = pad(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60)));
-  const secs = pad(Math.floor((time % (1000 * 60)) / 1000));
 
-  return { days, hours, mins, secs };
+  return { days, hours, minutes, seconds };
 }
 
-function pad(value) {
+function addLeadingZero(value) {
   return String(value).padStart(2, '0');
 }
-
-// Set time components on web-page.
-function updateTimerInterface({ days, hours, mins, secs }) {
-  refs.days.textContent = `${days}`;
-  refs.hours.textContent = `${hours}`;
-  refs.mins.textContent = `${mins}`;
-  refs.secs.textContent = `${secs}`;
-}
-
-// Examples on getUTC times.
-
-// console.log(
-//   `${pad(new Date(deltaTime).getUTCHours())}:${pad(
-//     new Date(deltaTime).getUTCMinutes()
-//   )}:${pad(new Date(deltaTime).getUTCSeconds())}`
-// );
-// console.log(new Date(deltaTime).getUTCMinutes());
-// console.log(new Date(deltaTime).getUTCSeconds());

@@ -43,6 +43,11 @@ img {
   color: #808080;
 }
 
+::-webkit-calendar-picker-indicator {
+  background: #f0f0f0;
+  cursor: pointer;
+}
+
 .timer {
   display: flex;
   gap: 10px;
@@ -63,4 +68,25 @@ img {
   font-size: 14px;
   text-transform: uppercase;
   /* line-height: 10px; */
+}
+
+.alert {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 20px 10px;
+  border: 1px solid #800;
+  color: #fff;
+  background-color: #f88;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.alert.js-hidden {
+  opacity: 0;
+  visibility: hidden;
 }
