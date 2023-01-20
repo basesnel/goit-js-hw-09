@@ -21,7 +21,10 @@ const options = {
       return;
     }
 
-    refs.start.disabled = false;
+    if (btnActive) {
+      refs.start.disabled = false;
+      btnActive = !btnActive;
+    }
   },
 };
 
@@ -60,6 +63,7 @@ refs.start.addEventListener('click', () => {
 
 // Button stylization.
 refs.start.disabled = true;
+let btnActive = true;
 
 // console.log(convertMs(2000)); // {days: 0, hours: 0, minutes: 0, seconds: 2}
 // console.log(convertMs(140000)); // {days: 0, hours: 0, minutes: 2, seconds: 20}
