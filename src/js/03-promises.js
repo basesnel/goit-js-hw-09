@@ -22,9 +22,11 @@ function handleSubmit(event) {
 
   refs.delay.value = refs.step.value = refs.amount.value = '';
 
+  delay = +delay;
+
   for (let i = 0; i < amount; i += 1) {
     let position = i + 1;
-    delay = +delay + i * step;
+
     promises.push(
       createPromise(position, delay)
         .then(({ position, delay }) => {
@@ -36,6 +38,8 @@ function handleSubmit(event) {
           // console.log(`❌ Rejected promise ${position} in ${delay}ms`);
         })
     );
+
+    delay = delay + parseInt(step);
   }
 }
 
